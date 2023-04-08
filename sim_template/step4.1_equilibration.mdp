@@ -1,0 +1,37 @@
+define                  =  
+integrator              = md
+dt                      = 0.001
+nsteps                  = 125000
+nstxtcout               = 5000
+nstvout                 = 5000
+nstfout                 = 5000
+nstcalcenergy           = 100
+nstenergy               = 1000
+nstlog                  = 1000
+;
+cutoff-scheme           = Verlet
+nstlist                 = 20
+rlist                   = 0.9
+vdwtype                 = Cut-off
+rvdw_switch             = 0
+rvdw                    = 0.9
+coulombtype             = pme
+rcoulomb                = 0.9
+;
+tcoupl                  = Nose-Hoover
+tc_grps                 = SOLV
+tau_t                   = 2.0
+ref_t                   = 303.15
+;
+constraints             = h-bonds
+constraint_algorithm    = LINCS
+;
+nstcomm                 = 100
+comm_mode               = linear
+comm_grps               = SOLV
+;
+gen-vel                 = yes
+gen-temp                = 303.15
+gen-seed                = -1
+;
+refcoord_scaling        = com

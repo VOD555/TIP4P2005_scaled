@@ -1,0 +1,115 @@
+; VARIOUS PREPROCESSING OPTIONS
+title                    = water bio7 npt
+
+
+; RUN CONTROL PARAMETERS
+integrator               = md
+; Start time and timestep in ps
+tinit                    = 0
+dt                       = 0.002
+nsteps                   = 8000000
+; For exact run continuation or redoing part of a run
+init_step                = 0
+; mode for center of mass motion removal
+comm-mode                = Linear
+; number of steps for center of mass motion removal
+nstcomm                  = 1
+; group(s) for center of mass motion removal
+comm-grps                =
+
+;freezegrps = ice
+;freezedim = y y y 
+
+
+; OUTPUT CONTROL OPTIONS
+; Output frequency for coords (x), velocities (v) and forces (f)
+nstxout                  = 500
+nstvout                  = 500
+nstfout                  = 500
+; Checkpointing helps you continue after crashes
+nstcheckpoint            = 500
+; Output frequency for energies to log file and energy file
+nstlog                   = 500 
+nstenergy                = 500 
+; Output frequency and precision for xtc file
+nstxtcout                = 500
+xtc-precision            = 1000
+; This selects the subset of atoms for the xtc file. You can
+; select multiple groups. By default all atoms will be written.
+xtc-grps                 = 
+; Selection of energy groups
+energygrps               = 
+
+; NEIGHBORSEARCHING PARAMETERS
+; nblist update frequency
+nstlist                  = 1
+; ns algorithm (simple or grid)
+ns_type                  = grid
+; Periodic boundary conditions: xyz (default), no (vacuum)
+; or full (infinite systems only)
+pbc                      = xyz
+; nblist cut-off        
+rlist                    = 0.9  
+domain-decomposition     = no
+
+; OPTIONS FOR ELECTROSTATICS AND VDW
+; Method for doing electrostatics
+coulombtype              = pme
+rcoulomb                 = 0.9 
+pme_order                = 4
+fourierspacing           = 0.1
+
+; Method for doing Van der Waals
+;vdw-type                 = switch  
+vdw-type                 = cut-off  
+; cut-off lengths      
+;rvdw-switch              = 1.20
+rvdw                     = 0.9
+; Apply long range dispersion corrections for Energy and Pressure
+DispCorr                 = EnerPres 
+; Extension of the potential lookup tables beyond the cut-off
+table-extension          = 1
+
+; OPTIONS FOR WEAK COUPLING ALGORITHMS
+; Temperature coupling  
+;Tcoupl                   = no
+Tcoupl                   = nose-hoover
+tau_t                    = 2.0
+ref_t                    = 298.0
+tc-grps                  = system
+
+;Pcoupl                   =  no 
+
+Pcoupl                   = parrinello-rahman
+tau_p                    = 2.0
+pcoupltype               = isotropic 
+ref_p                    = 1 
+compressibility          = 5e-5
+
+; SIMULATED ANNEALING  
+; Type of annealing for each temperature group (no/single/periodic)
+annealing                = no
+
+; GENERATE VELOCITIES FOR STARTUP RUN
+ gen_vel                  = yes
+ gen_temp                 = 298.00
+ gen_seed                 = 508934891
+
+; OPTIONS FOR BONDS    
+
+; SHAKE
+;constraints              = all-angles
+; Type of constraint algorithm
+;constraint-algorithm     = shake 
+;shake-tol                = 1e-6
+; Do not constrain the start configuration
+;unconstrained-start      = no
+
+; LINCS 
+constraints              = all-angles
+; Type of constraint algorithm
+constraint-algorithm     = lincs
+lincs-iter               =  1
+lincs-order              =  6
+
+
