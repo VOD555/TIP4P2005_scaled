@@ -1,11 +1,11 @@
 integrator              = md
 dt                      = 0.002
-nsteps                  = 5000000
+nsteps                  = 2500000
 nstxtcout               = 500
 nstvout                 = 5000
 nstfout                 = 5000
 nstcalcenergy           = 100
-nstenergy               = 1000
+nstenergy               = 500
 nstlog                  = 1000
 ;
 cutoff-scheme           = Verlet

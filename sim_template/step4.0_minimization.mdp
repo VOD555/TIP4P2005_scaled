@@ -1,4 +1,5 @@
 define                  = 
+integrator              = steep
 emtol                   = 1000.0
 nsteps                  = 5000
 nstlist                 = 10
