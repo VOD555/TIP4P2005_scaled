@@ -6,7 +6,7 @@ import MDAnalysis as mda
 
 def water_dielectric(dir):
     top = path.join(dir, 'step5.tpr')
-    trj = path.join(dir, 'step5.xtc')
+    trj = path.join(dir, 'md.xtc')
     u = mda.Universe(top, trj)
     diel = DielectricConstant(u.atoms, temperature=298, make_whole=False, start=5000)
     diel.run()
@@ -26,7 +26,7 @@ def shear_viscosity_einstein(dir):
 
 def water_density(dir):
     top = path.join(dir, 'step5.tpr')
-    trj = path.join(dir, 'step5.xtc')
+    trj = path.join(dir, 'md.xtc')
     u = mda.Universe(top, trj)
     volume = 0
     for ts in u.trajectory:

@@ -88,9 +88,9 @@ if __name__ == '__main__':
     # Initial settings.
     pop_size = 20
     max_iter=100
-    charges = (0.5*1.1128, 1.2*1.1128)
+    charges = (0.5*1.1128, 1.1*1.1128)
     sigma = (0.5*0.31589, 1.2*0.31589)
-    epsilon = (0.2*0.77490, 5*0.77490)
+    epsilon = (0.5*0.77490, 1.2*0.77490)
     bounds = [charges, sigma, epsilon]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    solutions = [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size)]
+    solutions = [[1.1128, 0.31589, 0.77490]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
     solutions_array = np.array(solutions)
 
     logger.info('Save solutions to {}.'.format(path.join(dir, 'solutions')))
