@@ -1,6 +1,7 @@
 #!/bin/bash
  
 #SBATCH -J TIP4P                 # name
+#SBATCH --exclude=tubiwan
 #SBATCH -N 1                           # 1 node
 #SBATCH -n 16                           # 6 cores in total
 #SBATCH --gres=gpu:1               # Send a notification when the job starts, stops, or fails
@@ -10,8 +11,6 @@
 # run Gromacs 2021.1
  
 # threaded version (fastest on a single node)
-
-module load gromacs/2021.1/cuda11.1/gcc-7.5.0/avx/bare/
 
 gmx grompp -f step4.0_minimization.mdp -o step4.0_minimization.tpr -c step3_input.pdb -r step3_input.pdb -p topol.top -n index.ndx -maxwarn -1
 gmx mdrun -v -deffnm step4.0_minimization
@@ -30,3 +29,9 @@ gmx mdrun -v -deffnm step5
 
 echo "0" | gmx trjconv -f step5.xtc -s step5.tpr -ur compact -pbc mol -o md.xtc 
 gmx energy -f step5.edr -s step5.tpr -evisco -vis
+
+# module load gromacs/2021.1/cuda11.1/gcc-7.5.0/avx/bare/
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate py39
+
+python get_rdf.py

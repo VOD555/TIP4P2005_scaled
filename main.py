@@ -7,6 +7,7 @@ from subprocess import call
 import shutil
 from objective_func import objective
 import logging
+import pandas as pd
 
 def mutation_func(a, b, c, mutation, bounds):
     """
@@ -74,7 +75,7 @@ def production_simulation(solution, temp_dir, repository, n):
 
 def check_job_status(account):
     while True:
-        output = subprocess.check_output(["squeue", "-u", account])
+        output = subprocess.check_output(["squeue", "--name", account])
         lines = output.decode().split("\n")
         num_jobs = len(lines) - 2  # subtract two for header and empty line
         if num_jobs == 0:
@@ -90,19 +91,22 @@ if __name__ == '__main__':
     max_iter=100
     charges = (0.5*1.1128, 1.1*1.1128)
     sigma = (0.5*0.31589, 1.2*0.31589)
-    epsilon = (0.5*0.77490, 1.2*0.77490)
+    epsilon = (0.5*0.77490, 1.5*0.77490)
     bounds = [charges, sigma, epsilon]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
-    dir = '/nfs/homes4/sfan/Projects/TIP4P/100round'
-    ref = np.array([45, 0.99565, 0.0007972])
+    dir = '/nfs/homes4/sfan/Projects/TIP4P/testgpu'
+
+    df = pd.read_csv('/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/rdf.csv')                                                 
+    rdfrdf = df.OO                                                              
+    ref = [np.array([45, 0.99565, 0.7972]), rdfrdf] 
 
     logger = logging.getLogger(path.join(dir, 'logging.log'))
 
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    solutions = [[1.1128, 0.31589, 0.77490]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
+    solutions = [[0.99766, 0.30715, 0.92988]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
     solutions_array = np.array(solutions)
 
     logger.info('Save solutions to {}.'.format(path.join(dir, 'solutions')))
@@ -117,7 +121,7 @@ if __name__ == '__main__':
         n += 1
 
     logger.info('Waiting simulations.')
-    account = "sfan"
+    account = "TIP4P"
     check_job_status(account)
 
     # Predict physical properties and objective function

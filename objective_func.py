@@ -36,6 +36,10 @@ def water_density(dir):
     density = u.atoms.total_mass()/volume*constants.atomic_mass*10**27
     return density
 
+def rdf_diff(dir):
+    rdf = path.join(dir, 'rdf.npy')
+    return rdf
+
 def check_sim(dir):
     gro = path.join(dir, 'step5.gro')
     return path.isfile(gro)
@@ -47,7 +51,7 @@ def objective(dir, ref):
         diel = water_dielectric(dir)
         dens = water_density(dir)
         visc = shear_viscosity_einstein(dir)
-        obj = np.sqrt(np.sum((np.array([diel, dens, visc]) - ref)**2)/3)
+        obj = np.sqrt(np.sum((np.array([diel, dens, visc*1000.]) - ref[0])**2)/3) + np.sum(np.abs(rdf-ref[1]))*0.03
     else:
         comp = 0
         diel = 0
