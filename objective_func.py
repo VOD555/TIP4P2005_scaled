@@ -51,6 +51,7 @@ def objective(dir, ref):
         diel = water_dielectric(dir)
         dens = water_density(dir)
         visc = shear_viscosity_einstein(dir)
+        rdf = rdf_diff(dir)
         obj = np.sqrt(np.sum((np.array([diel, dens, visc*1000.]) - ref[0])**2)/3) + np.sum(np.abs(rdf-ref[1]))*0.03
     else:
         comp = 0
