@@ -37,7 +37,7 @@ def water_density(dir):
     return density
 
 def rdf_diff(dir):
-    rdf = path.join(dir, 'rdf.npy')
+    rdf = np.load(path.join(dir, 'rdf.npy'))
     return rdf
 
 def check_sim(dir):

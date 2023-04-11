@@ -8,44 +8,7 @@ import shutil
 from objective_func import objective
 import logging
 import pandas as pd
-
-def mutation_func(a, b, c, mutation, bounds):
-    """
-    Mutation function for differential evolution algorithm.
-
-    Args:
-        a (list): First parent.
-        b (list): Second parent.
-        c (list): Third parent.
-        mutation (float): Mutation rate.
-        bounds (list): List of tuples specifying the upper and lower bounds of each parameter.
-
-    Returns:
-        list: Mutated individual.
-    """
-
-    mutant = [a[i] + mutation * (b[i] - c[i]) for i in range(len(a))]
-    mutant = [min(max(mutant[i], bounds[i][0]), bounds[i][1]) for i in range(len(mutant))]
-
-    return mutant
-
-
-def crossover_func(mutant, parent, crossover):
-    """
-    Crossover function for differential evolution algorithm.
-
-    Args:
-        mutant (list): Mutated individual.
-        parent (list): Parent individual.
-        crossover (float): Crossover rate.
-
-    Returns:
-        list: Trial individual.
-    """
-
-    trial = [mutant[i] if random.random() < crossover else parent[i] for i in range(len(mutant))]
-
-    return trial
+from Differential_Evolution import mutation_func, mutation_func
 
 def production_simulation(solution, temp_dir, repository, n):
     """
@@ -95,7 +58,7 @@ if __name__ == '__main__':
     bounds = [charges, sigma, epsilon]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
-    dir = '/nfs/homes4/sfan/Projects/TIP4P/testgpu'
+    dir = '/nfs/homes4/sfan/Projects/TIP4P/current_to_best'
 
     df = pd.read_csv('/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/rdf.csv')                                                 
     rdfrdf = df.OO                                                              
@@ -106,7 +69,7 @@ if __name__ == '__main__':
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    solutions = [[0.99766, 0.30715, 0.92988]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
+    solutions = [[1.02576, 0.31831, 0.58328]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
     solutions_array = np.array(solutions)
 
     logger.info('Save solutions to {}.'.format(path.join(dir, 'solutions')))
@@ -138,8 +101,9 @@ if __name__ == '__main__':
     valid_samples = samples[samples[:,3]!=0]
     valid_solutions = valid_samples[:,:3].tolist()
 
-    best_idx = np.argmax(valid_samples[:,-1])
-    best_solution = valid_samples[best_idx, :]
+    best_idx = np.argmin(valid_samples[:,-1])
+    best_solution = valid_samples[best_idx, :3]
+    print('Best sample gives an objective function of {}'.format(valid_samples[best_idx, -1]))
     logger.info('Best solution is {0}, {1}, {2}, and objective function is'.format(
         best_solution[0], best_solution[1], best_solution[2], best_solution[-1]))
 
@@ -159,7 +123,7 @@ if __name__ == '__main__':
                 a, b, c = valid_solutions[idxs[0]], valid_solutions[idxs[1]], valid_solutions[idxs[2]]
 
                 # Perform mutation
-                mutant = mutation_func(a, b, c, mutation, bounds)
+                mutant = mutation_func(a, b, c, best_solution, mutation, bounds, 'current_to_best')
 
                 # Perform crossover
                 trial = crossover_func(mutant, solutions[i], crossover)
