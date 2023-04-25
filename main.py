@@ -8,44 +8,8 @@ import shutil
 from objective_func import objective
 import logging
 import pandas as pd
-from Differential_Evolution import mutation_func, mutation_func
-
-def production_simulation(solution, temp_dir, repository, n):
-    """
-    Submit slurm job to perform simulations based on the given parameters in solution.
-
-    Args:
-        solution (list): list of parameters.
-        temp_dir (string): path to the simulation template directory.
-        repository (string): path to the output directory.
-        n (int): number of the current list of parameters.
-
-    """
-
-    dir = path.join(repository, str(n))
-    shutil.copytree(temp_dir, dir)
-    topol = path.join(dir, 'topol.top')
-    with open(topol, 'r') as ff:
-        data = ff.readlines()
-    data[6] = 'IW      0           -{0:.4f}      D   0.0           0.0\n'.format(round(solution[0], 4))
-    data[7] = 'OWT4    15.9994      0.0000      A   {0:.5f}       {1:.5f}\n'.format(solution[1], solution[2])
-    data[8] = 'HW      1.0079       {0:.5f}     A   0.00000E+00   0.00000E+00\n'.format(round(solution[0], 4)/2)
-
-    with open(topol, 'w') as ff:
-        ff.writelines( data )
-    s = path.join(dir, 'submit.sh')
-    call(s)
-
-def check_job_status(account):
-    while True:
-        output = subprocess.check_output(["squeue", "--name", account])
-        lines = output.decode().split("\n")
-        num_jobs = len(lines) - 2  # subtract two for header and empty line
-        if num_jobs == 0:
-            break
-        time.sleep(150)  # wait for 10 seconds before checking again
-
-    print("All jobs under account", account, "have finished.")
+from Differential_Evolution import mutation_func, crossover_func
+from production import check_job_status, production_simulation
 
 if __name__ == '__main__':
     # range of the parameters, latter defined in a yaml file
@@ -58,18 +22,18 @@ if __name__ == '__main__':
     bounds = [charges, sigma, epsilon]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
-    dir = '/nfs/homes4/sfan/Projects/TIP4P/current_to_best'
+    dir = '/nfs/homes4/sfan/Projects/TIP4P/testgpu'
 
     df = pd.read_csv('/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/rdf.csv')                                                 
     rdfrdf = df.OO                                                              
-    ref = [np.array([45, 0.99565, 0.7972]), rdfrdf] 
+    ref = [np.array([45, 0.99565, 0.896, 2.3]), rdfrdf] 
 
     logger = logging.getLogger(path.join(dir, 'logging.log'))
 
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    solutions = [[1.02576, 0.31831, 0.58328]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
+    solutions = [[1.1128, 0.31589, 0.77490]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
     solutions_array = np.array(solutions)
 
     logger.info('Save solutions to {}.'.format(path.join(dir, 'solutions')))
@@ -167,10 +131,12 @@ if __name__ == '__main__':
         valid_solutions = valid_samples[:,:3].tolist()
     
         best_idx = np.argmax(valid_samples[:,-1])
-        best_solution = valid_samples[best_idx, :]
-        logger.info('Best solution is {0}, {1}, {2}, and objective function is'.format(
-                    best_solution[0], best_solution[1], best_solution[2], best_solution[-1]))
-        if best_solution[-1] < 0.01:
+        best_solution = valid_samples[best_idx, :3]
+        bestobj = valid_samples[best_idx, -1]
+        print('Best solution is {0}, {1}, {2}, and objective function is {3}'.format(
+                    best_solution[0], best_solution[1], best_solution[2], bestobj))
+        
+        if bestobj < 0.01:
             print('Converged.')
             break
     else:

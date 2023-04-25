@@ -21,7 +21,7 @@ def mutation_func(a, b, c, best, mutation, bounds, method='rand1'):
     if method == 'rand1':
         mutant = [a[i] + mutation * (b[i] - c[i]) for i in range(len(a))]
     elif method == 'current_to_best':
-        mutant = [a[i] + mutation * (best[i] - a[i]) + mutation * (b[i] - c[i])]
+        mutant = [a[i] + mutation * (best[i] - a[i]) + mutation * (b[i] - c[i]) for i in range(len(a))]
 
     mutant = [min(max(mutant[i], bounds[i][0]), bounds[i][1]) for i in range(len(mutant))]
 

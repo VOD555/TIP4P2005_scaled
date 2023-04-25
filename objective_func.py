@@ -8,7 +8,7 @@ def water_dielectric(dir):
     top = path.join(dir, 'step5.tpr')
     trj = path.join(dir, 'md.xtc')
     u = mda.Universe(top, trj)
-    diel = DielectricConstant(u.atoms, temperature=298, make_whole=False, start=5000)
+    diel = DielectricConstant(u.atoms, temperature=303.15, make_whole=False, start=5000)
     diel.run()
     return diel.results['eps_mean']
 
@@ -21,7 +21,7 @@ def shear_viscosity_einstein(dir):
     '''
     # Load the file into a numpy array
     visco = path.join(dir, 'evisco.xvg')
-    data = np.genfromtxt(visco, comments='@', skip_header=16)
+    data = np.genfromtxt(visco, comments='@', skip_header=18)
     return np.mean(data[:,4])
 
 def water_density(dir):
@@ -44,6 +44,14 @@ def check_sim(dir):
     gro = path.join(dir, 'step5.gro')
     return path.isfile(gro)
 
+def self_diff(dir):
+    data = path.join(dir, "msd.xvg")
+    with open(data, 'r') as f:
+        for i, line in enumerate(f):
+            if i == 19:
+                file_content = line.strip()
+    return float(file_content.split()[4])
+
 def objective(dir, ref):
     comp = check_sim(dir)
     if comp:
@@ -51,12 +59,14 @@ def objective(dir, ref):
         diel = water_dielectric(dir)
         dens = water_density(dir)
         visc = shear_viscosity_einstein(dir)
+        diff = self_diff(dir)
         rdf = rdf_diff(dir)
-        obj = np.sqrt(np.sum((np.array([diel, dens, visc*1000.]) - ref[0])**2)/3) + np.sum(np.abs(rdf-ref[1]))*0.03
+        obj = np.sqrt(np.sum(((np.array([diel, dens, visc*1000, diff]) - ref[0])/ref[0])**2) + (np.sum(np.abs(rdf-ref[1]))/37)**2)
     else:
         comp = 0
         diel = 0
         dens = 0
         visc = 0
+        diff = 0
         obj = 0
-    return np.array([comp, diel, dens, visc, obj])
+    return np.array([comp, diel, dens, visc, diff, obj])

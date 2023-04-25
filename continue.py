@@ -8,81 +8,8 @@ import shutil
 from objective_func import objective
 import logging
 import pandas as pd
-
-def mutation_func(a, b, c, mutation, bounds):
-    """
-    Mutation function for differential evolution algorithm.
-
-    Args:
-        a (list): First parent.
-        b (list): Second parent.
-        c (list): Third parent.
-        mutation (float): Mutation rate.
-        bounds (list): List of tuples specifying the upper and lower bounds of each parameter.
-
-    Returns:
-        list: Mutated individual.
-    """
-
-    mutant = [a[i] + mutation * (b[i] - c[i]) for i in range(len(a))]
-    mutant = [min(max(mutant[i], bounds[i][0]), bounds[i][1]) for i in range(len(mutant))]
-
-    return mutant
-
-
-def crossover_func(mutant, parent, crossover):
-    """
-    Crossover function for differential evolution algorithm.
-
-    Args:
-        mutant (list): Mutated individual.
-        parent (list): Parent individual.
-        crossover (float): Crossover rate.
-
-    Returns:
-        list: Trial individual.
-    """
-
-    trial = [mutant[i] if random.random() < crossover else parent[i] for i in range(len(mutant))]
-
-    return trial
-
-def production_simulation(solution, temp_dir, repository, n):
-    """
-    Submit slurm job to perform simulations based on the given parameters in solution.
-
-    Args:
-        solution (list): list of parameters.
-        temp_dir (string): path to the simulation template directory.
-        repository (string): path to the output directory.
-        n (int): number of the current list of parameters.
-
-    """
-
-    dir = path.join(repository, str(n))
-    shutil.copytree(temp_dir, dir)
-    topol = path.join(dir, 'topol.top')
-    with open(topol, 'r') as ff:
-        data = ff.readlines()
-    data[6] = 'IW      0           -{0:.4f}      D   0.0           0.0\n'.format(round(solution[0], 4))
-    data[7] = 'OWT4    15.9994      0.0000      A   {0:.5f}       {1:.5f}\n'.format(solution[1], solution[2])
-    data[8] = 'HW      1.0079       {0:.5f}     A   0.00000E+00   0.00000E+00\n'.format(round(solution[0], 4)/2)
-
-    with open(topol, 'w') as ff:
-        ff.writelines( data )
-    s = path.join(dir, 'submit.sh')
-    call(s)
-
-def check_job_status(account):
-    while True:
-        output = subprocess.check_output(["squeue", "--name", account])
-        lines = output.decode().split("\n")
-        num_jobs = len(lines) - 2  # subtract two for header and empty line
-        if num_jobs == 0:
-            break
-        time.sleep(150)  # wait for 10 seconds before checking again
-
-    print("All jobs under account", account, "have finished.")
+from Differential_Evolution import mutation_func, crossover_func
+from production import check_job_status, production_simulation
 
 if __name__ == '__main__':
     # range of the parameters, latter defined in a yaml file
