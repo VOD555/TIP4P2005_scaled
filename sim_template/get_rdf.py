@@ -8,4 +8,5 @@ if __name__ == '__main__':
     u = mda.Universe(top, trj)
     oxygen = u.select_atoms('name OW1')
     o_o = rdf.InterRDF(oxygen, oxygen, 307, (1.005, 10.215))
+    o_o.run()
     np.save('rdf', o_o.results.rdf)
