@@ -28,9 +28,24 @@ gmx grompp -f step5_production.mdp -o step5.tpr -c step4.1_equilibration.gro -p 
 gmx mdrun -v -deffnm step5
 
 echo "0" | gmx trjconv -f step5.xtc -s step5.tpr -ur compact -pbc mol -o md.xtc 
-gmx energy -f step5.edr -s step5.tpr -evisco -vis
 
-# module load gromacs/2021.1/cuda11.1/gcc-7.5.0/avx/bare/
+# 1ns NVT
+for i in {0..4}
+do
+    cd md$i
+    gmx grompp -f ../nvt.mdp -c ../step5.gro -p ../topol.top -n ../index.ndx -o nvt.tpr
+    gmx mdrun -deffnm nvt -v
+    echo "0" | gmx trjconv -f nvt.xtc -s nvt.tpr -ur compact -pbc mol -o nvtc.xtc 
+    result=$(awk 'END{print $1*$2*$3}' nvt.gro)
+
+    echo $result | gmx energy -f nvt.edr -s nvt.tpr -evisco -vis
+    
+    echo "3" | gmx msd -f nvt.xtc -s nvt.tpr -n ../ow.ndx
+
+    rm energy.xvg
+    cd ..
+done
+
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate py39
 

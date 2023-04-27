@@ -16,9 +16,9 @@ if __name__ == '__main__':
     # Initial settings.
     pop_size = 20
     max_iter=100
-    charges = (0.5*1.1128, 1.1*1.1128)
-    sigma = (0.5*0.31589, 1.2*0.31589)
-    epsilon = (0.5*0.77490, 1.5*0.77490)
+    charges = (0.9, 1.2)
+    sigma = (0.29, 0.33)
+    epsilon = (0.5, 1.0)
     bounds = [charges, sigma, epsilon]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
@@ -67,7 +67,7 @@ if __name__ == '__main__':
                 a, b, c = valid_solutions[idxs[0]], valid_solutions[idxs[1]], valid_solutions[idxs[2]]
 
                 # Perform mutation
-                mutant = mutation_func(a, b, c, mutation, bounds)
+                mutant = mutation_func(a, b, c, best_solution, mutation, bounds, 'current_to_best')
 
                 # Perform crossover
                 trial = crossover_func(mutant, solutions[i], crossover)
@@ -80,12 +80,12 @@ if __name__ == '__main__':
             production_simulation(solution, temp, dir, n)
             n += 1
 
-        check_job_status(jobname)
+        check_job_status(account)
 
         # Evaluate solutions
         new_res = []
         for i in range(n-pop_size, n):
-            new_res.append(objective(path.join(dir, str(i))))
+            new_res.append(objective(path.join(dir, str(i)), ref))
         new_res = np.array(new_res)
         np.save(path.join(dir, 'new_res'), new_res)
 
@@ -111,14 +111,15 @@ if __name__ == '__main__':
         valid_solutions = valid_samples[:,:3].tolist()
     
         best_idx = np.argmax(valid_samples[:,-1])
-        best_solution = valid_samples[best_idx, :]
-        logger.info('Best solution is {0}, {1}, {2}, and objective function is'.format(
-                    best_solution[0], best_solution[1], best_solution[2], best_solution[-1]))
-        if best_solution[-1] < 0.01:
+        best_solution = valid_samples[best_idx, :3]
+        bestobj = valid_samples[best_idx, -1]
+        print('Best solution is {0}, {1}, {2}, and objective function is {3}'.format(
+                    best_solution[0], best_solution[1], best_solution[2], bestobj))
+        
+        if bestobj < 0.01:
             print('Converged.')
             break
     else:
         print("Didn't get converged results after {} rounds of DE.".format(max_iter))
-
 
             

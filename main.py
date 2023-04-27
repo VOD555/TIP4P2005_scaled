@@ -16,24 +16,25 @@ if __name__ == '__main__':
     # Initial settings.
     pop_size = 20
     max_iter=100
-    charges = (0.5*1.1128, 1.1*1.1128)
-    sigma = (0.5*0.31589, 1.2*0.31589)
-    epsilon = (0.5*0.77490, 1.5*0.77490)
+    charges = (0.9, 1.2)
+    sigma = (0.29, 0.33)
+    epsilon = (0.5, 1.0)
     bounds = [charges, sigma, epsilon]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
-    dir = '/nfs/homes4/sfan/Projects/TIP4P/testgpu'
+    dir = '/nfs/homes4/sfan/Projects/TIP4P/refine'
 
     df = pd.read_csv('/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/rdf.csv')                                                 
     rdfrdf = df.OO                                                              
-    ref = [np.array([45, 0.99565, 0.896, 2.3]), rdfrdf] 
+    ref = [np.array([45, 0.99565, 0.797, 2.3]), rdfrdf] 
 
     logger = logging.getLogger(path.join(dir, 'logging.log'))
 
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    solutions = [[1.1128, 0.31589, 0.77490]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
+    # solutions = [[1.1128, 0.31589, 0.77490]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
+    solutions = np.load('/nfs/homes4/sfan/Projects/TIP4P/testgpu/solutions.npy')
     solutions_array = np.array(solutions)
 
     logger.info('Save solutions to {}.'.format(path.join(dir, 'solutions')))
