@@ -24,6 +24,7 @@ def production_simulation(solution, temp_dir, repository, n):
     data[6] = 'IW      0           -{0:.4f}      D   0.0           0.0\n'.format(round(solution[0], 4))
     data[7] = 'OWT4    15.9994      0.0000      A   {0:.5f}       {1:.5f}\n'.format(solution[1], solution[2])
     data[8] = 'HW      1.0079       {0:.5f}     A   0.00000E+00   0.00000E+00\n'.format(round(solution[0], 4)/2)
+    data[53] = '4       1       2       3       1       {0:.8f}      {0:.8f} \n'.format(round(solution[3], 8))
 
     with open(topol, 'w') as ff:
         ff.writelines( data )

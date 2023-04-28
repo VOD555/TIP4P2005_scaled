@@ -1,10 +1,7 @@
 import numpy as np
 import random
 from os import path
-import subprocess
-import time
 from subprocess import call
-import shutil
 from objective_func import objective
 import logging
 import pandas as pd
@@ -19,10 +16,11 @@ if __name__ == '__main__':
     charges = (0.9, 1.2)
     sigma = (0.29, 0.33)
     epsilon = (0.5, 1.0)
-    bounds = [charges, sigma, epsilon]
+    OD = (0., 0.03/(np.cos(np.radians(52.26))* 0.09572)/2)
+    bounds = [charges, sigma, epsilon, OD]
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
-    dir = '/nfs/homes4/sfan/Projects/TIP4P/refine'
+    dir = '/nfs/homes4/sfan/Projects/TIP4P/OD'
 
     df = pd.read_csv('/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/rdf.csv')                                                 
     rdfrdf = df.OO                                                              
@@ -33,8 +31,8 @@ if __name__ == '__main__':
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    # solutions = [[1.1128, 0.31589, 0.77490]] + [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size-1)]
-    solutions = np.load('/nfs/homes4/sfan/Projects/TIP4P/testgpu/solutions.npy')
+    solutions = [[random.uniform(b[0], b[1]) for b in bounds] for i in range(pop_size)]
+    # solutions = np.load('/nfs/homes4/sfan/Projects/TIP4P/refine0/solutions.npy')
     solutions_array = np.array(solutions)
 
     logger.info('Save solutions to {}.'.format(path.join(dir, 'solutions')))
