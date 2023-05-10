@@ -1,10 +1,7 @@
 import numpy as np
 import random
 from os import path
-import subprocess
-import time
 from subprocess import call
-import shutil
 from objective_func import objective
 import logging
 import pandas as pd
@@ -19,37 +16,40 @@ if __name__ == '__main__':
     charges = (0.9, 1.2)
     sigma = (0.29, 0.33)
     epsilon = (0.5, 1.0)
-    bounds = [charges, sigma, epsilon]
+    OD = (0., 0.03/(np.cos(np.radians(52.26))* 0.09572)/2)
+    bounds = [charges, sigma, epsilon, OD]
+    n_parameters = len(bounds)
 
     temp = '/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/sim_template'
-    dir = '/nfs/homes4/sfan/Projects/TIP4P/test_run'
+    dir = '/nfs/homes4/sfan/Projects/TIP4P/OD'
 
     df = pd.read_csv('/nfs/homes4/sfan/Projects/Methods/TIP4P2005_scaled/rdf.csv')                                                 
     rdfrdf = df.OO                                                              
-    ref = [np.array([45, 0.99565, 0.7972]), rdfrdf] 
+    ref = [np.array([45, 0.99565, 0.797, 2.3]), rdfrdf] 
 
     logger = logging.getLogger(path.join(dir, 'logging.log'))
 
     # Generate initial solutions
     logger.info('Generating inital solutions.')
 
-    solutions_array = np.load(path.join(dir, 'solutions'))
+    solutions_array = np.load(path.join(dir, 'solutions.npy'))
     solutions = solutions_array.tolist()
 
     # Predict physical properties and objective function
 
-    res = np.load(path.join(dir, 'res'))
+    res = np.load(path.join(dir, 'res.npy'))
 
-    samples = np.load(path.join(dir, 'samples'))
+    samples = np.load(path.join(dir, 'samples.npy'))
 
     n = len(samples)
-    valid_samples = samples[samples[:,3]!=0]
-    valid_solutions = valid_samples[:,:3].tolist()
+    valid_samples = samples[samples[:,n_parameters]!=0]
+    valid_solutions = valid_samples[:,:n_parameters].tolist()
 
     best_idx = np.argmin(valid_samples[:,-1])
-    best_solution = valid_samples[best_idx, :]
-    logger.info('Best solution is {0}, {1}, {2}, and objective function is'.format(
-        best_solution[0], best_solution[1], best_solution[2], best_solution[-1]))
+    best_solution = valid_samples[best_idx, :n_parameters]
+    print('Best sample gives an objective function of {}'.format(valid_samples[best_idx, -1]))
+    logger.info('Best solution is {0}, {1}, {2}, {3} and objective function is {4}'.format(
+        best_solution[0], best_solution[1], best_solution[2], best_solution[3], best_solution[-1]))
 
     mutation = 0.8
     crossover = 0.7
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             if res[i,0] == 0:
                 new_solutions[i] = [random.uniform(b[0], b[1]) for b in bounds]
             else:
-                idxs = random.sample(range(len(valid_solutions)), 3)
+                idxs = random.sample(range(len(valid_solutions)), n_parameters)
                 a, b, c = valid_solutions[idxs[0]], valid_solutions[idxs[1]], valid_solutions[idxs[2]]
 
                 # Perform mutation
@@ -80,6 +80,7 @@ if __name__ == '__main__':
             production_simulation(solution, temp, dir, n)
             n += 1
 
+        account = "TIP4P"
         check_job_status(account)
 
         # Evaluate solutions
@@ -107,14 +108,14 @@ if __name__ == '__main__':
         np.save(path.join(dir, 'res'), np.array(res))
 
         intermediate_samples = np.hstack((solutions, res))
-        valid_samples = intermediate_samples[intermediate_samples[:,3]!=0]
-        valid_solutions = valid_samples[:,:3].tolist()
+        valid_samples = intermediate_samples[intermediate_samples[:,n_parameters]!=0]
+        valid_solutions = valid_samples[:,:n_parameters].tolist()
     
-        best_idx = np.argmax(valid_samples[:,-1])
-        best_solution = valid_samples[best_idx, :3]
+        best_idx = np.argmin(valid_samples[:,-1])
+        best_solution = valid_samples[best_idx, :n_parameters]
         bestobj = valid_samples[best_idx, -1]
-        print('Best solution is {0}, {1}, {2}, and objective function is {3}'.format(
-                    best_solution[0], best_solution[1], best_solution[2], bestobj))
+        print('Best solution is {0}, {1}, {2}, {3} and objective function is {4}'.format(
+                    best_solution[0], best_solution[1], best_solution[2], best_solution[3], bestobj))
         
         if bestobj < 0.01:
             print('Converged.')
